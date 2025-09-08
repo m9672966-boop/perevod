@@ -1,45 +1,70 @@
-window.addEventListener('load', () => {
-  console.log('Kaiten Translations Addon loading...');
-  
-  if (window.Addon) {
-    console.log('SDK Kaiten loaded successfully');
-    
-    Addon.initialize({
+// Ждем полной загрузки страницы и SDK
+function initializeAddon() {
+  if (typeof window.Addon === 'undefined') {
+    console.error('SDK Kaiten не загружен');
+    return;
+  }
+
+  console.log('SDK Kaiten loaded, initializing...');
+
+  try {
+    window.Addon.initialize({
       card_buttons: async (context) => {
-        console.log('Initializing card buttons...');
-        const permissions = context.getPermissions();
+        console.log('Card buttons context received');
         
-        if (!permissions.card.update) {
-          console.log('No card update permissions');
+        try {
+          const permissions = context.getPermissions();
+          if (!permissions.card.update) {
+            console.log('No card update permissions');
+            return [];
+          }
+
+          return [{
+            text: '🌐 Переводы',
+            callback: async (callbackContext) => {
+              console.log('Translation button clicked');
+              try {
+                const iframeUrl = window.location.origin + '/translations';
+                
+                // Используем метод из контекста если доступен
+                if (typeof callbackContext.openIframe === 'function') {
+                  callbackContext.openIframe(iframeUrl);
+                } else {
+                  // Fallback на postMessage
+                  window.parent.postMessage({
+                    type: 'kaiten-plugin-iframe-open',
+                    url: iframeUrl
+                  }, '*');
+                }
+              } catch (error) {
+                console.error('Error opening iframe:', error);
+              }
+            }
+          }];
+        } catch (error) {
+          console.error('Error in card_buttons handler:', error);
           return [];
         }
-
-        return [{
-          text: '🌐 Переводы',
-          callback: async (callbackContext) => {
-            console.log('Translation button clicked');
-            try {
-              window.parent.postMessage({
-                type: 'kaiten-plugin-iframe-open',
-                url: window.location.origin + '/translations'
-              }, '*');
-              console.log('Message sent to parent');
-            } catch (error) {
-              console.error('Error sending message:', error);
-            }
-          }
-        }];
       }
     });
-  } else {
-    console.error("SDK Kaiten не загружен");
-    document.getElementById('status').innerHTML = `
-      <div class="error">
-        SDK Kaiten не загружен. Возможные причины:<br>
-        - Блокировка CORS<br>
-        - Проблемы с сетью<br>
-        - Неверный URL SDK
-      </div>
-    `;
+    
+    console.log('Addon initialized successfully');
+  } catch (error) {
+    console.error('Error initializing addon:', error);
   }
-});
+}
+
+// Запускаем инициализацию когда SDK готов
+if (typeof window.Addon !== 'undefined') {
+  initializeAddon();
+} else {
+  // Ждем загрузки SDK
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof window.Addon !== 'undefined') {
+      initializeAddon();
+    } else {
+      // Пробуем еще раз через секунду
+      setTimeout(initializeAddon, 1000);
+    }
+  });
+}
