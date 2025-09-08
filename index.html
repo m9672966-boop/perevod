@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Управление переводами</title>
+  <title>Kaiten Translations Addon</title>
   <style>
     body {
       background: transparent;
@@ -10,29 +10,52 @@
       padding: 0;
       font-family: 'Roboto', Arial, sans-serif;
     }
+    .status {
+      padding: 20px;
+      text-align: center;
+      color: #666;
+    }
   </style>
 </head>
 <body>
+  <div class="status" id="status">Loading Kaiten addon...</div>
+  
   <script>
     // Проверяем, что мы в iframe Kaiten
     if (window.parent !== window) {
-      // Загружаем SDK только если мы в iframe
-      const script = document.createElement('script');
-      script.src = 'https://files.kaiten.ru/web-sdk/v1.min.js';
-      script.onload = function() {
-        // Загружаем client.js после загрузки SDK
+      console.log('✅ In Kaiten iframe context');
+      
+      // Динамически загружаем SDK
+      const sdkScript = document.createElement('script');
+      sdkScript.src = 'https://files.kaiten.ru/web-sdk/v1.min.js';
+      sdkScript.onload = function() {
+        console.log('✅ Kaiten SDK loaded');
+        
+        // Загружаем наш client.js после SDK
         const clientScript = document.createElement('script');
         clientScript.src = '/client.js';
+        clientScript.onload = function() {
+          document.getElementById('status').textContent = 'Addon loaded successfully!';
+        };
+        clientScript.onerror = function() {
+          document.getElementById('status').textContent = 'Error loading client.js';
+        };
         document.head.appendChild(clientScript);
       };
-      document.head.appendChild(script);
+      sdkScript.onerror = function() {
+        document.getElementById('status').textContent = 'Error loading Kaiten SDK';
+      };
+      document.head.appendChild(sdkScript);
+      
     } else {
-      // Если мы не в iframe, показываем сообщение
+      // Прямой доступ - показываем информацию
       document.body.innerHTML = `
-        <div style="padding: 20px; text-align: center;">
+        <div style="padding: 20px;">
           <h2>Kaiten Translations Addon</h2>
-          <p>Это дополнение предназначено для работы внутри Kaiten.</p>
-          <p>Откройте карточку в Kaiten чтобы использовать функционал.</p>
+          <p>Это дополнение работает только внутри Kaiten.</p>
+          <p>URL: ${window.location.href}</p>
+          <p>Статус: ✅ Сервер работает</p>
+          <p><a href="/translations" target="_blank">Открыть страницу переводов</a></p>
         </div>
       `;
     }
