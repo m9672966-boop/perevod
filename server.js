@@ -3,15 +3,18 @@ const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 
 const app = express();
 
 // Middleware
 app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// Инициализация базы данных (используем файл для persistence на Render)
+// Serve static files from root
+app.use(express.static(__dirname));
+
+// Инициализация базы данных
 const db = new sqlite3.Database('./translations.db');
 
 // Создание таблицы переводов
@@ -98,12 +101,20 @@ app.delete('/api/translations/:id', (req, res) => {
   );
 });
 
-// Маршрут для страницы переводов
+// Serve HTML pages
 app.get('/translations', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'translations.html'));
+  res.sendFile(path.join(__dirname, 'translations.html'));
 });
 
-// Health check endpoint для Render
+app.get('/client.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client.js'));
+});
+
+app.get('/translations.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'translations.js'));
+});
+
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
