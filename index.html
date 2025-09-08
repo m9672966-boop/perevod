@@ -3,61 +3,31 @@
 <head>
   <meta charset="utf-8">
   <title>Kaiten Translations</title>
+  <script src="https://files.kaiten.ru/web-sdk/v1.min.js"></script>
   <script>
-    // Загружаем SDK Kaiten
-    (function() {
-      const script = document.createElement('script');
-      script.src = 'https://files.kaiten.ru/web-sdk/v1.min.js';
-      script.onload = initAddon;
-      script.onerror = function() {
-        console.error('Failed to load Kaiten SDK');
-      };
-      document.head.appendChild(script);
-      
-      function initAddon() {
-        if (window.Addon) {
-          try {
-            window.Addon.initialize({
-              card_buttons: function(context) {
-                return [{
-                  text: '🌐 Переводы',
-                  callback: function(callbackContext) {
-                    const url = window.location.origin + '/translations';
-                    console.log('Opening URL:', url);
-                    
-                    try {
-                      // Используем стандартный метод Kaiten
-                      if (callbackContext && typeof callbackContext.openIframe === 'function') {
-                        callbackContext.openIframe(url);
-                        console.log('Opened via openIframe method');
-                      } 
-                      // Альтернативный метод
-                      else if (window.parent && typeof window.parent.postMessage === 'function') {
-                        window.parent.postMessage({
-                          type: 'kaiten-iframe-open',
-                          url: url
-                        }, '*');
-                        console.log('Opened via postMessage');
-                      }
-                      else {
-                        console.error('No available method to open iframe');
-                      }
-                    } catch (e) {
-                      console.error('Error opening iframe:', e);
-                    }
-                  }
-                }];
-              }
-            });
-            console.log('✅ Kaiten addon initialized successfully');
-          } catch (e) {
-            console.error('❌ Addon initialization error:', e);
-          }
-        } else {
-          console.error('❌ Kaiten SDK not available');
+    // Ждем загрузки SDK
+    setTimeout(function() {
+      if (window.Addon) {
+        try {
+          window.Addon.initialize({
+            card_buttons: function() {
+              return [{
+                text: '🌐 Переводы',
+                callback: function(ctx) {
+                  // Простое открытие в новом окне
+                  window.open(window.location.origin + '/translations', '_blank');
+                }
+              }];
+            }
+          });
+          console.log('✅ Kaiten addon initialized');
+        } catch (error) {
+          console.error('❌ Addon error:', error);
         }
+      } else {
+        console.error('❌ Kaiten SDK not found');
       }
-    })();
+    }, 1000);
   </script>
   <style>
     body { 
@@ -68,16 +38,5 @@
   </style>
 </head>
 <body>
-  <script>
-    // Добавляем обработчик сообщений для обратной связи
-    window.addEventListener('message', function(event) {
-      console.log('Message received:', event.data);
-    });
-    
-    // Логируем информацию о окружении
-    console.log('Kaiten Translations Addon loaded');
-    console.log('Origin:', window.location.origin);
-    console.log('Parent window:', window.parent === window ? 'self' : 'different');
-  </script>
 </body>
 </html>
