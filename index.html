@@ -23,25 +23,38 @@
                   text: '🌐 Переводы',
                   callback: function(callbackContext) {
                     const url = window.location.origin + '/translations';
+                    console.log('Opening URL:', url);
+                    
                     try {
-                      if (callbackContext.openIframe) {
+                      // Используем стандартный метод Kaiten
+                      if (callbackContext && typeof callbackContext.openIframe === 'function') {
                         callbackContext.openIframe(url);
-                      } else {
+                        console.log('Opened via openIframe method');
+                      } 
+                      // Альтернативный метод
+                      else if (window.parent && typeof window.parent.postMessage === 'function') {
                         window.parent.postMessage({
-                          type: 'kaiten-plugin-iframe-open',
+                          type: 'kaiten-iframe-open',
                           url: url
                         }, '*');
+                        console.log('Opened via postMessage');
+                      }
+                      else {
+                        console.error('No available method to open iframe');
                       }
                     } catch (e) {
-                      console.error('Error:', e);
+                      console.error('Error opening iframe:', e);
                     }
                   }
                 }];
               }
             });
+            console.log('✅ Kaiten addon initialized successfully');
           } catch (e) {
-            console.error('Init error:', e);
+            console.error('❌ Addon initialization error:', e);
           }
+        } else {
+          console.error('❌ Kaiten SDK not available');
         }
       }
     })();
@@ -55,6 +68,16 @@
   </style>
 </head>
 <body>
-  <!-- Пустое тело, все в скриптах -->
+  <script>
+    // Добавляем обработчик сообщений для обратной связи
+    window.addEventListener('message', function(event) {
+      console.log('Message received:', event.data);
+    });
+    
+    // Логируем информацию о окружении
+    console.log('Kaiten Translations Addon loaded');
+    console.log('Origin:', window.location.origin);
+    console.log('Parent window:', window.parent === window ? 'self' : 'different');
+  </script>
 </body>
 </html>
