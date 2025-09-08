@@ -3,7 +3,6 @@ let currentSearchTimeout = null;
 async function searchTranslations() {
   const searchTerm = document.getElementById('searchInput').value.trim();
   
-  // Дебаунс поиска
   if (currentSearchTimeout) {
     clearTimeout(currentSearchTimeout);
   }
@@ -39,6 +38,15 @@ function displayResults(translations) {
           <th>Немецкий</th>
           <th>Французский</th>
           <th>Испанский</th>
+          <th>Польский</th>
+          <th>Казахский</th>
+          <th>Итальянский</th>
+          <th>Белорусский</th>
+          <th>Украинский</th>
+          <th>Голландский</th>
+          <th>Киргизский</th>
+          <th>Узбекский</th>
+          <th>Армянский</th>
           <th>Действия</th>
         </tr>
       </thead>
@@ -53,6 +61,15 @@ function displayResults(translations) {
         <td>${escapeHtml(translation.german || '-')}</td>
         <td>${escapeHtml(translation.french || '-')}</td>
         <td>${escapeHtml(translation.spanish || '-')}</td>
+        <td>${escapeHtml(translation.polish || '-')}</td>
+        <td>${escapeHtml(translation.kazakh || '-')}</td>
+        <td>${escapeHtml(translation.italian || '-')}</td>
+        <td>${escapeHtml(translation.belarusian || '-')}</td>
+        <td>${escapeHtml(translation.ukrainian || '-')}</td>
+        <td>${escapeHtml(translation.dutch || '-')}</td>
+        <td>${escapeHtml(translation.kyrgyz || '-')}</td>
+        <td>${escapeHtml(translation.uzbek || '-')}</td>
+        <td>${escapeHtml(translation.armenian || '-')}</td>
         <td>
           <button class="delete" onclick="deleteTranslation(${translation.id})">
             Удалить
@@ -76,6 +93,15 @@ async function addTranslation() {
   const german = document.getElementById('germanInput').value.trim();
   const french = document.getElementById('frenchInput').value.trim();
   const spanish = document.getElementById('spanishInput').value.trim();
+  const polish = document.getElementById('polishInput').value.trim();
+  const kazakh = document.getElementById('kazakhInput').value.trim();
+  const italian = document.getElementById('italianInput').value.trim();
+  const belarusian = document.getElementById('belarusianInput').value.trim();
+  const ukrainian = document.getElementById('ukrainianInput').value.trim();
+  const dutch = document.getElementById('dutchInput').value.trim();
+  const kyrgyz = document.getElementById('kyrgyzInput').value.trim();
+  const uzbek = document.getElementById('uzbekInput').value.trim();
+  const armenian = document.getElementById('armenianInput').value.trim();
   
   if (!russian) {
     alert('Поле "Русский" обязательно для заполнения');
@@ -93,17 +119,26 @@ async function addTranslation() {
         english: english || null,
         german: german || null,
         french: french || null,
-        spanish: spanish || null
+        spanish: spanish || null,
+        polish: polish || null,
+        kazakh: kazakh || null,
+        italian: italian || null,
+        belarusian: belarusian || null,
+        ukrainian: ukrainian || null,
+        dutch: dutch || null,
+        kyrgyz: kyrgyz || null,
+        uzbek: uzbek || null,
+        armenian: armenian || null
       })
     });
     
     if (response.ok) {
-      // Очищаем поля ввода
-      document.getElementById('russianInput').value = '';
-      document.getElementById('englishInput').value = '';
-      document.getElementById('germanInput').value = '';
-      document.getElementById('frenchInput').value = '';
-      document.getElementById('spanishInput').value = '';
+      // Очищаем все поля ввода
+      document.querySelectorAll('input').forEach(input => {
+        if (input.id !== 'searchInput') {
+          input.value = '';
+        }
+      });
       
       // Обновляем результаты поиска
       searchTranslations();
@@ -128,7 +163,6 @@ async function deleteTranslation(id) {
     });
     
     if (response.ok) {
-      // Обновляем результаты поиска
       searchTranslations();
       alert('Перевод успешно удален!');
     } else {
@@ -141,6 +175,7 @@ async function deleteTranslation(id) {
 }
 
 function escapeHtml(text) {
+  if (!text) return '';
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
