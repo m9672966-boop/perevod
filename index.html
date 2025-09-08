@@ -9,10 +9,44 @@
       background: transparent;
       margin: 0;
       padding: 0;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    
+    .loading {
+      padding: 20px;
+      text-align: center;
+      color: #666;
+    }
+    
+    .error {
+      color: #ff4757;
+      padding: 10px;
+      background: #ffe6e6;
+      border-radius: 4px;
+      margin: 10px;
     }
   </style>
 </head>
 <body>
+  <div id="status">
+    <div class="loading">Загрузка дополнения...</div>
+  </div>
+  
+  <script>
+    // Проверяем загрузку SDK
+    setTimeout(() => {
+      if (!window.Addon) {
+        document.getElementById('status').innerHTML = `
+          <div class="error">
+            Ошибка: SDK Kaiten не загружен. Проверьте:<br>
+            1. Доступность https://files.kaiten.ru/web-sdk/v1.min.js<br>
+            2. Настройки CORS на сервере
+          </div>
+        `;
+      }
+    }, 3000);
+  </script>
+  
   <script src="/client.js"></script>
 </body>
 </html>
