@@ -2,63 +2,59 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Kaiten Translations Addon</title>
+  <title>Kaiten Translations</title>
+  <script>
+    // Загружаем SDK Kaiten
+    (function() {
+      const script = document.createElement('script');
+      script.src = 'https://files.kaiten.ru/web-sdk/v1.min.js';
+      script.onload = initAddon;
+      script.onerror = function() {
+        console.error('Failed to load Kaiten SDK');
+      };
+      document.head.appendChild(script);
+      
+      function initAddon() {
+        if (window.Addon) {
+          try {
+            window.Addon.initialize({
+              card_buttons: function(context) {
+                return [{
+                  text: '🌐 Переводы',
+                  callback: function(callbackContext) {
+                    const url = window.location.origin + '/translations';
+                    try {
+                      if (callbackContext.openIframe) {
+                        callbackContext.openIframe(url);
+                      } else {
+                        window.parent.postMessage({
+                          type: 'kaiten-plugin-iframe-open',
+                          url: url
+                        }, '*');
+                      }
+                    } catch (e) {
+                      console.error('Error:', e);
+                    }
+                  }
+                }];
+              }
+            });
+          } catch (e) {
+            console.error('Init error:', e);
+          }
+        }
+      }
+    })();
+  </script>
   <style>
-    body {
-      background: transparent;
-      margin: 0;
-      padding: 0;
-      font-family: 'Roboto', Arial, sans-serif;
-    }
-    .status {
-      padding: 20px;
-      text-align: center;
-      color: #666;
+    body { 
+      background: transparent; 
+      margin: 0; 
+      padding: 0; 
     }
   </style>
 </head>
 <body>
-  <div class="status" id="status">Loading Kaiten addon...</div>
-  
-  <script>
-    // Проверяем, что мы в iframe Kaiten
-    if (window.parent !== window) {
-      console.log('✅ In Kaiten iframe context');
-      
-      // Динамически загружаем SDK
-      const sdkScript = document.createElement('script');
-      sdkScript.src = 'https://files.kaiten.ru/web-sdk/v1.min.js';
-      sdkScript.onload = function() {
-        console.log('✅ Kaiten SDK loaded');
-        
-        // Загружаем наш client.js после SDK
-        const clientScript = document.createElement('script');
-        clientScript.src = '/client.js';
-        clientScript.onload = function() {
-          document.getElementById('status').textContent = 'Addon loaded successfully!';
-        };
-        clientScript.onerror = function() {
-          document.getElementById('status').textContent = 'Error loading client.js';
-        };
-        document.head.appendChild(clientScript);
-      };
-      sdkScript.onerror = function() {
-        document.getElementById('status').textContent = 'Error loading Kaiten SDK';
-      };
-      document.head.appendChild(sdkScript);
-      
-    } else {
-      // Прямой доступ - показываем информацию
-      document.body.innerHTML = `
-        <div style="padding: 20px;">
-          <h2>Kaiten Translations Addon</h2>
-          <p>Это дополнение работает только внутри Kaiten.</p>
-          <p>URL: ${window.location.href}</p>
-          <p>Статус: ✅ Сервер работает</p>
-          <p><a href="/translations" target="_blank">Открыть страницу переводов</a></p>
-        </div>
-      `;
-    }
-  </script>
+  <!-- Пустое тело, все в скриптах -->
 </body>
 </html>
