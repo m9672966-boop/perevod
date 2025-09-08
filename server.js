@@ -11,13 +11,13 @@ app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Инициализация базы данных
-const db = new sqlite3.Database(':memory:'); // Используем память, можно заменить на файл
+// Инициализация базы данных (используем файл для persistence на Render)
+const db = new sqlite3.Database('./translations.db');
 
 // Создание таблицы переводов
 db.serialize(() => {
   db.run(`
-    CREATE TABLE translations (
+    CREATE TABLE IF NOT EXISTS translations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       russian TEXT NOT NULL,
       english TEXT,
@@ -28,17 +28,22 @@ db.serialize(() => {
     )
   `);
 
-  // Добавляем тестовые данные
-  const stmt = db.prepare(`
-    INSERT INTO translations (russian, english, german, french, spanish)
-    VALUES (?, ?, ?, ?, ?)
-  `);
+  // Проверяем, есть ли уже данные
+  db.get("SELECT COUNT(*) as count FROM translations", (err, row) => {
+    if (row.count === 0) {
+      // Добавляем тестовые данные только если таблица пустая
+      const stmt = db.prepare(`
+        INSERT INTO translations (russian, english, german, french, spanish)
+        VALUES (?, ?, ?, ?, ?)
+      `);
 
-  stmt.run('Привет', 'Hello', 'Hallo', 'Bonjour', 'Hola');
-  stmt.run('Спасибо', 'Thank you', 'Danke', 'Merci', 'Gracias');
-  stmt.run('Пожалуйста', 'You are welcome', 'Bitte', 'De rien', 'De nada');
-  
-  stmt.finalize();
+      stmt.run('Привет', 'Hello', 'Hallo', 'Bonjour', 'Hola');
+      stmt.run('Спасибо', 'Thank you', 'Danke', 'Merci', 'Gracias');
+      stmt.run('Пожалуйста', 'You are welcome', 'Bitte', 'De rien', 'De nada');
+      
+      stmt.finalize();
+    }
+  });
 });
 
 // Маршруты API
@@ -98,10 +103,20 @@ app.get('/translations', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'translations.html'));
 });
 
+// Health check endpoint для Render
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.send('Kaiten Translations Addon is running');
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Translation addon server running on http://localhost:${PORT}`);
+  console.log(`Translation addon server running on port ${PORT}`);
 });
 
 // Graceful shutdown
