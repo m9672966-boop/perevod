@@ -13,7 +13,7 @@
     }
     
     .container {
-      max-width: 1200px;
+      max-width: 1600px;
       margin: 0 auto;
     }
     
@@ -43,6 +43,14 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+    
+    .language-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
     }
     
     input, textarea {
@@ -80,17 +88,21 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      min-width: 1200px;
     }
     
     th, td {
-      padding: 12px;
+      padding: 8px;
       text-align: left;
       border-bottom: 1px solid #ddd;
+      font-size: 14px;
     }
     
     th {
       background-color: #f8f9fa;
       font-weight: bold;
+      position: sticky;
+      top: 0;
     }
     
     .loading {
@@ -106,18 +118,24 @@
       border-radius: 4px;
       margin: 10px 0;
     }
+    
+    .language-badge {
+      font-size: 10px;
+      color: #666;
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🌐 Управление переводами</h1>
+    <h1>🌐 Управление переводами (16 языков)</h1>
     
     <div class="search-section">
       <h2>Поиск переводов</h2>
       <input 
         type="text" 
         id="searchInput" 
-        placeholder="Введите слово или фразу на русском..."
+        placeholder="Введите слово или фразу для поиска..."
         onkeyup="searchTranslations()"
       >
     </div>
@@ -125,10 +143,64 @@
     <div class="add-section">
       <h2>Добавить новый перевод</h2>
       <input type="text" id="russianInput" placeholder="Русский*" required>
-      <input type="text" id="englishInput" placeholder="Английский">
-      <input type="text" id="germanInput" placeholder="Немецкий">
-      <input type="text" id="frenchInput" placeholder="Французский">
-      <input type="text" id="spanishInput" placeholder="Испанский">
+      
+      <div class="language-grid">
+        <div>
+          <span class="language-badge">EN: английский</span>
+          <input type="text" id="englishInput" placeholder="Английский">
+        </div>
+        <div>
+          <span class="language-badge">DE: немецкий</span>
+          <input type="text" id="germanInput" placeholder="Немецкий">
+        </div>
+        <div>
+          <span class="language-badge">FR: французский</span>
+          <input type="text" id="frenchInput" placeholder="Французский">
+        </div>
+        <div>
+          <span class="language-badge">ES: испанский</span>
+          <input type="text" id="spanishInput" placeholder="Испанский">
+        </div>
+        <div>
+          <span class="language-badge">PL: польский</span>
+          <input type="text" id="polishInput" placeholder="Польский">
+        </div>
+        
+        <div>
+          <span class="language-badge">KZ: казахский</span>
+          <input type="text" id="kazakhInput" placeholder="Казахский">
+        </div>
+        <div>
+          <span class="language-badge">IT: итальянский</span>
+          <input type="text" id="italianInput" placeholder="Итальянский">
+        </div>
+        <div>
+          <span class="language-badge">BY: белорусский</span>
+          <input type="text" id="belarusianInput" placeholder="Белорусский">
+        </div>
+        <div>
+          <span class="language-badge">UA: украинский</span>
+          <input type="text" id="ukrainianInput" placeholder="Украинский">
+        </div>
+        <div>
+          <span class="language-badge">NL: голландский</span>
+          <input type="text" id="dutchInput" placeholder="Голландский">
+        </div>
+        
+        <div>
+          <span class="language-badge">KG: киргизский</span>
+          <input type="text" id="kyrgyzInput" placeholder="Киргизский">
+        </div>
+        <div>
+          <span class="language-badge">UZ: узбекский</span>
+          <input type="text" id="uzbekInput" placeholder="Узбекский">
+        </div>
+        <div>
+          <span class="language-badge">ARM: армянский</span>
+          <input type="text" id="armenianInput" placeholder="Армянский">
+        </div>
+      </div>
+      
       <button onclick="addTranslation()">Добавить перевод</button>
     </div>
     
