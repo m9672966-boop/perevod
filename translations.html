@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <title>Управление переводами</title>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: #f9f9f9;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    .search-section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .add-section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .results-section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    button {
+      background: #6B73FF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px 0;
+    }
+    
+    button:hover {
+      background: #5a62e0;
+    }
+    
+    button.delete {
+      background: #ff4757;
+    }
+    
+    button.delete:hover {
+      background: #e04050;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    
+    .error {
+      color: #ff4757;
+      padding: 10px;
+      background: #ffe6e6;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌐 Управление переводами</h1>
+    
+    <div class="search-section">
+      <h2>Поиск переводов</h2>
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="Введите слово или фразу на русском..."
+        onkeyup="searchTranslations()"
+      >
+    </div>
+    
+    <div class="add-section">
+      <h2>Добавить новый перевод</h2>
+      <input type="text" id="russianInput" placeholder="Русский*" required>
+      <input type="text" id="englishInput" placeholder="Английский">
+      <input type="text" id="germanInput" placeholder="Немецкий">
+      <input type="text" id="frenchInput" placeholder="Французский">
+      <input type="text" id="spanishInput" placeholder="Испанский">
+      <button onclick="addTranslation()">Добавить перевод</button>
+    </div>
+    
+    <div class="results-section">
+      <h2>Результаты поиска</h2>
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <script src="/js/translations.js"></script>
+</body>
+</html>
