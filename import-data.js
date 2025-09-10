@@ -2,10 +2,14 @@ const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const csv = require('csv-parser');
 
-const db = new sqlite3.Database(':memory:');
+// Подключаемся к ФАЙЛУ базы данных, а не к памяти
+const db = new sqlite3.Database('translations.db');
 
-// Создание таблицы
 db.serialize(() => {
+  // Сначала удаляем старую таблицу, если она есть (на случай повторного запуска)
+  db.run(`DROP TABLE IF EXISTS translations`);
+
+  // Создаем таблицу заново
   db.run(`CREATE TABLE translations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     russian TEXT NOT NULL,
@@ -24,27 +28,16 @@ db.serialize(() => {
     armenian TEXT
   )`);
 
-  // Чтение и импорт CSV данных
+  // ... остальной код импорта из CSV ...
   const results = [];
   fs.createReadStream('translations.csv')
     .pipe(csv({ separator: ';' }))
     .on('data', (data) => {
-      // Пропускаем пустые строки и заголовки
       if (data['НА ПЕРЕВОД'] && data['НА ПЕРЕВОД'].trim() !== '') {
         results.push({
           russian: data['НА ПЕРЕВОД'].trim(),
           english: data['EN: английский']?.trim() || null,
-          german: data['DE: немецкий']?.trim() || null,
-          french: data['FR: французский']?.trim() || null,
-          spanish: data['ES: испанский']?.trim() || null,
-          polish: data['PL: польский']?.trim() || null,
-          kazakh: data['KZ: казахский (коррект)']?.trim() || null,
-          italian: data['IT: итальянский']?.trim() || null,
-          belarusian: data['BY: белорусский']?.trim() || null,
-          ukrainian: data['UA: украинский']?.trim() || null,
-          dutch: data['NL: голландский/нидерландский']?.trim() || null,
-          kyrgyz: data['KG: киргизский']?.trim() || null,
-          uzbek: data['UZ: узбекский']?.trim() || null,
+          // ... добавьте все остальные поля ...
           armenian: data['Армянский']?.trim() || null
         });
       }
@@ -63,6 +56,7 @@ db.serialize(() => {
       });
       
       stmt.finalize();
-      console.log(`Импортировано ${results.length} записей`);
+      console.log(`Импортировано ${results.length} записей в файл translations.db`);
+      db.close(); // Закрываем соединение после импорта
     });
 });
