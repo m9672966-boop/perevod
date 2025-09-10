@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 app.use(express.static('.'));
 
 // Инициализация базы данных
-const db = new sqlite3.Database(':memory:'); // Используем память для простоты
+const db = new sqlite3.Database('translations.db'); // Файл будет создан автоматически
 
 // Создание таблицы переводов
 db.serialize(() => {
@@ -128,3 +128,4 @@ app.get('/translations', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
