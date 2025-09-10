@@ -102,7 +102,72 @@ app.get('/api/translations', (req, res) => {
   });
 });
 
-// ... остальные API маршруты остаются без изменений
+app.get('/api/translations/:id', (req, res) => {
+  const id = req.params.id;
+  
+  db.get('SELECT * FROM translations WHERE id = ?', [id], (err, row) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json(row);
+  });
+});
+
+app.post('/api/translations', (req, res) => {
+  const { russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian } = req.body;
+  
+  db.run(
+    `INSERT INTO translations (russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian) 
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian],
+    function(err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({ id: this.lastID });
+    }
+  );
+});
+
+app.put('/api/translations/:id', (req, res) => {
+  const id = req.params.id;
+  const { russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian } = req.body;
+  
+  db.run(
+    `UPDATE translations SET russian = ?, english = ?, german = ?, french = ?, spanish = ?, polish = ?, kazakh = ?, italian = ?, belarusian = ?, ukrainian = ?, dutch = ?, kyrgyz = ?, uzbek = ?, armenian = ? WHERE id = ?`,
+    [russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian, id],
+    function(err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json({ changes: this.changes });
+    }
+  );
+});
+
+app.delete('/api/translations/:id', (req, res) => {
+  const id = req.params.id;
+  
+  db.run('DELETE FROM translations WHERE id = ?', [id], function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ changes: this.changes });
+  });
+});
+
+// Обслуживание HTML страниц
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/translations', (req, res) => {
+  res.sendFile(path.join(__dirname, 'translations.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
