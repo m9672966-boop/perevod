@@ -124,6 +124,18 @@
       color: #666;
       display: block;
     }
+    
+    .language-toggle {
+      margin-top: 15px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+    
+    .language-toggle label {
+      margin-right: 15px;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -138,6 +150,25 @@
         placeholder="Введите слово или фразу для поиска..."
         onkeyup="searchTranslations()"
       >
+      
+      <div class="language-toggle">
+        <h3>Отображаемые языки:</h3>
+        <label><input type="checkbox" name="language" value="russian" checked> Русский</label>
+        <label><input type="checkbox" name="language" value="english" checked> Английский</label>
+        <label><input type="checkbox" name="language" value="german" checked> Немецкий</label>
+        <label><input type="checkbox" name="language" value="french" checked> Французский</label>
+        <label><input type="checkbox" name="language" value="spanish" checked> Испанский</label>
+        <label><input type="checkbox" name="language" value="polish" checked> Польский</label>
+        <label><input type="checkbox" name="language" value="kazakh" checked> Казахский</label>
+        <label><input type="checkbox" name="language" value="italian" checked> Итальянский</label>
+        <label><input type="checkbox" name="language" value="belarusian" checked> Белорусский</label>
+        <label><input type="checkbox" name="language" value="ukrainian" checked> Украинский</label>
+        <label><input type="checkbox" name="language" value="dutch" checked> Голландский</label>
+        <label><input type="checkbox" name="language" value="kyrgyz" checked> Киргизский</label>
+        <label><input type="checkbox" name="language" value="uzbek" checked> Узбекский</label>
+        <label><input type="checkbox" name="language" value="armenian" checked> Армянский</label>
+        <button onclick="applyLanguageFilter()">Применить</button>
+      </div>
     </div>
     
     <div class="add-section">
@@ -145,57 +176,57 @@
       <input type="text" id="russianInput" placeholder="Русский*" required>
       
       <div class="language-grid">
-        <div>
+        <div id="englishContainer">
           <span class="language-badge">EN: английский</span>
           <input type="text" id="englishInput" placeholder="Английский">
         </div>
-        <div>
+        <div id="germanContainer">
           <span class="language-badge">DE: немецкий</span>
           <input type="text" id="germanInput" placeholder="Немецкий">
         </div>
-        <div>
+        <div id="frenchContainer">
           <span class="language-badge">FR: французский</span>
           <input type="text" id="frenchInput" placeholder="Французский">
         </div>
-        <div>
+        <div id="spanishContainer">
           <span class="language-badge">ES: испанский</span>
           <input type="text" id="spanishInput" placeholder="Испанский">
         </div>
-        <div>
+        <div id="polishContainer">
           <span class="language-badge">PL: польский</span>
           <input type="text" id="polishInput" placeholder="Польский">
         </div>
         
-        <div>
+        <div id="kazakhContainer">
           <span class="language-badge">KZ: казахский</span>
           <input type="text" id="kazakhInput" placeholder="Казахский">
         </div>
-        <div>
+        <div id="italianContainer">
           <span class="language-badge">IT: итальянский</span>
           <input type="text" id="italianInput" placeholder="Итальянский">
         </div>
-        <div>
+        <div id="belarusianContainer">
           <span class="language-badge">BY: белорусский</span>
           <input type="text" id="belarusianInput" placeholder="Белорусский">
         </div>
-        <div>
+        <div id="ukrainianContainer">
           <span class="language-badge">UA: украинский</span>
           <input type="text" id="ukrainianInput" placeholder="Украинский">
         </div>
-        <div>
+        <div id="dutchContainer">
           <span class="language-badge">NL: голландский</span>
           <input type="text" id="dutchInput" placeholder="Голландский">
         </div>
         
-        <div>
+        <div id="kyrgyzContainer">
           <span class="language-badge">KG: киргизский</span>
           <input type="text" id="kyrgyzInput" placeholder="Киргизский">
         </div>
-        <div>
+        <div id="uzbekContainer">
           <span class="language-badge">UZ: узбекский</span>
           <input type="text" id="uzbekInput" placeholder="Узбекский">
         </div>
-        <div>
+        <div id="armenianContainer">
           <span class="language-badge">ARM: армянский</span>
           <input type="text" id="armenianInput" placeholder="Армянский">
         </div>
