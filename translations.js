@@ -1,5 +1,6 @@
 let currentSearchTimeout = null;
 let editingId = null;
+let visibleLanguages = ['russian', 'english', 'german', 'french', 'spanish', 'polish', 'kazakh', 'italian', 'belarusian', 'ukrainian', 'dutch', 'kyrgyz', 'uzbek', 'armenian'];
 
 async function searchTranslations() {
   const searchTerm = document.getElementById('searchInput').value.trim();
@@ -35,19 +36,24 @@ function displayResults(translations) {
       <thead>
         <tr>
           <th>Русский</th>
-          <th>Английский</th>
-          <th>Немецкий</th>
-          <th>Французский</th>
-          <th>Испанский</th>
-          <th>Польский</th>
-          <th>Казахский</th>
-          <th>Итальянский</th>
-          <th>Белорусский</th>
-          <th>Украинский</th>
-          <th>Голландский</th>
-          <th>Киргизский</th>
-          <th>Узбекский</th>
-          <th>Армянский</th>
+  `;
+  
+  // Добавляем заголовки только для видимых языков
+  if (visibleLanguages.includes('english')) html += `<th>Английский</th>`;
+  if (visibleLanguages.includes('german')) html += `<th>Немецкий</th>`;
+  if (visibleLanguages.includes('french')) html += `<th>Французский</th>`;
+  if (visibleLanguages.includes('spanish')) html += `<th>Испанский</th>`;
+  if (visibleLanguages.includes('polish')) html += `<th>Польский</th>`;
+  if (visibleLanguages.includes('kazakh')) html += `<th>Казахский</th>`;
+  if (visibleLanguages.includes('italian')) html += `<th>Итальянский</th>`;
+  if (visibleLanguages.includes('belarusian')) html += `<th>Белорусский</th>`;
+  if (visibleLanguages.includes('ukrainian')) html += `<th>Украинский</th>`;
+  if (visibleLanguages.includes('dutch')) html += `<th>Голландский</th>`;
+  if (visibleLanguages.includes('kyrgyz')) html += `<th>Киргизский</th>`;
+  if (visibleLanguages.includes('uzbek')) html += `<th>Узбекский</th>`;
+  if (visibleLanguages.includes('armenian')) html += `<th>Армянский</th>`;
+  
+  html += `
           <th>Действия</th>
         </tr>
       </thead>
@@ -58,19 +64,24 @@ function displayResults(translations) {
     html += `
       <tr>
         <td>${escapeHtml(translation.russian)}</td>
-        <td>${escapeHtml(translation.english || '-')}</td>
-        <td>${escapeHtml(translation.german || '-')}</td>
-        <td>${escapeHtml(translation.french || '-')}</td>
-        <td>${escapeHtml(translation.spanish || '-')}</td>
-        <td>${escapeHtml(translation.polish || '-')}</td>
-        <td>${escapeHtml(translation.kazakh || '-')}</td>
-        <td>${escapeHtml(translation.italian || '-')}</td>
-        <td>${escapeHtml(translation.belarusian || '-')}</td>
-        <td>${escapeHtml(translation.ukrainian || '-')}</td>
-        <td>${escapeHtml(translation.dutch || '-')}</td>
-        <td>${escapeHtml(translation.kyrgyz || '-')}</td>
-        <td>${escapeHtml(translation.uzbek || '-')}</td>
-        <td>${escapeHtml(translation.armenian || '-')}</td>
+    `;
+    
+    // Добавляем ячейки только для видимых языков
+    if (visibleLanguages.includes('english')) html += `<td>${escapeHtml(translation.english || '-')}</td>`;
+    if (visibleLanguages.includes('german')) html += `<td>${escapeHtml(translation.german || '-')}</td>`;
+    if (visibleLanguages.includes('french')) html += `<td>${escapeHtml(translation.french || '-')}</td>`;
+    if (visibleLanguages.includes('spanish')) html += `<td>${escapeHtml(translation.spanish || '-')}</td>`;
+    if (visibleLanguages.includes('polish')) html += `<td>${escapeHtml(translation.polish || '-')}</td>`;
+    if (visibleLanguages.includes('kazakh')) html += `<td>${escapeHtml(translation.kazakh || '-')}</td>`;
+    if (visibleLanguages.includes('italian')) html += `<td>${escapeHtml(translation.italian || '-')}</td>`;
+    if (visibleLanguages.includes('belarusian')) html += `<td>${escapeHtml(translation.belarusian || '-')}</td>`;
+    if (visibleLanguages.includes('ukrainian')) html += `<td>${escapeHtml(translation.ukrainian || '-')}</td>`;
+    if (visibleLanguages.includes('dutch')) html += `<td>${escapeHtml(translation.dutch || '-')}</td>`;
+    if (visibleLanguages.includes('kyrgyz')) html += `<td>${escapeHtml(translation.kyrgyz || '-')}</td>`;
+    if (visibleLanguages.includes('uzbek')) html += `<td>${escapeHtml(translation.uzbek || '-')}</td>`;
+    if (visibleLanguages.includes('armenian')) html += `<td>${escapeHtml(translation.armenian || '-')}</td>`;
+    
+    html += `
         <td>
           <button class="edit" onclick="startEdit(${translation.id})">
             ✏️
@@ -91,8 +102,51 @@ function displayResults(translations) {
   resultsDiv.innerHTML = html;
 }
 
+function applyLanguageFilter() {
+  const checkboxes = document.querySelectorAll('input[name="language"]:checked');
+  visibleLanguages = Array.from(checkboxes).map(cb => cb.value);
+  
+  // Перезапускаем поиск, чтобы обновить таблицу
+  searchTranslations();
+  // Скрываем/показываем поля в форме добавления
+  toggleAddFormFields();
+}
+
+function toggleAddFormFields() {
+  const languageContainers = {
+    'english': document.getElementById('englishContainer'),
+    'german': document.getElementById('germanContainer'),
+    'french': document.getElementById('frenchContainer'),
+    'spanish': document.getElementById('spanishContainer'),
+    'polish': document.getElementById('polishContainer'),
+    'kazakh': document.getElementById('kazakhContainer'),
+    'italian': document.getElementById('italianContainer'),
+    'belarusian': document.getElementById('belarusianContainer'),
+    'ukrainian': document.getElementById('ukrainianContainer'),
+    'dutch': document.getElementById('dutchContainer'),
+    'kyrgyz': document.getElementById('kyrgyzContainer'),
+    'uzbek': document.getElementById('uzbekContainer'),
+    'armenian': document.getElementById('armenianContainer')
+  };
+  
+  for (const [lang, container] of Object.entries(languageContainers)) {
+    if (visibleLanguages.includes(lang)) {
+      container.style.display = 'block';
+    } else {
+      container.style.display = 'none';
+    }
+  }
+}
+
 function startEdit(id) {
   editingId = id;
+  
+  // Запрашиваем пароль
+  const password = prompt('Введите пароль для редактирования:');
+  if (password !== 'Proizv_23!') {
+    alert('Неверный пароль!');
+    return;
+  }
   
   // Загружаем данные перевода для редактирования
   fetch(`/api/translations/${id}`)
@@ -174,11 +228,19 @@ async function updateTranslation() {
     return;
   }
   
+  // Пароль уже запрошен в startEdit, но для безопасности можно запросить снова
+  const password = prompt('Введите пароль для подтверждения редактирования:');
+  if (password !== 'Proizv_23!') {
+    alert('Неверный пароль!');
+    return;
+  }
+  
   try {
     const response = await fetch(`/api/translations/${editingId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'X-Password': password
       },
       body: JSON.stringify({
         russian,
@@ -281,10 +343,20 @@ async function deleteTranslation(id) {
   if (!confirm('Вы уверены, что хотите удалить этот перевод?')) {
     return;
   }
+
+  // Запрашиваем пароль
+  const password = prompt('Введите пароль для удаления:');
+  if (password !== 'Proizv_23!') {
+    alert('Неверный пароль!');
+    return;
+  }
   
   try {
     const response = await fetch(`/api/translations/${id}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: {
+        'X-Password': password
+      }
     });
     
     if (response.ok) {
@@ -309,4 +381,5 @@ function escapeHtml(text) {
 // Инициализация поиска при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   searchTranslations();
+  toggleAddFormFields();
 });
