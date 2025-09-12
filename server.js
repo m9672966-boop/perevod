@@ -14,12 +14,22 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('.'));
 
-// Инициализация базы данных
-const db = new sqlite3.Database(':memory:');
+// Инициализация базы данных в ФАЙЛЕ
+const db = new sqlite3.Database('translations.db');
 
-// Создание таблицы переводов
+// Middleware для проверки пароля на запросы изменения/удаления
+const authenticate = (req, res, next) => {
+    const password = req.headers['x-password'];
+    if (password === 'Proizv_23!') {
+        next(); // Пароль верный, продолжаем
+    } else {
+        res.status(401).json({ error: 'Неверный пароль' });
+    }
+};
+
+// Создание таблицы переводов (если не существует)
 db.serialize(() => {
-  db.run(`CREATE TABLE translations (
+  db.run(`CREATE TABLE IF NOT EXISTS translations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     russian TEXT NOT NULL,
     english TEXT,
@@ -37,50 +47,63 @@ db.serialize(() => {
     armenian TEXT
   )`);
 
-  // Импорт данных из CSV
-  const results = [];
-  fs.createReadStream('translations.csv')
-    .pipe(csv({ separator: ';' }))
-    .on('data', (data) => {
-      // Пропускаем пустые строки и заголовки
-      if (data['НА ПЕРЕВОД'] && data['НА ПЕРЕВОД'].trim() !== '') {
-        results.push({
-          russian: data['НА ПЕРЕВОД'].trim(),
-          english: data['EN: английский']?.trim() || null,
-          german: data['DE: немецкий']?.trim() || null,
-          french: data['FR: французский']?.trim() || null,
-          spanish: data['ES: испанский']?.trim() || null,
-          polish: data['PL: польский']?.trim() || null,
-          kazakh: data['KZ: казахский (коррект)']?.trim() || null,
-          italian: data['IT: итальянский']?.trim() || null,
-          belarusian: data['BY: белорусский']?.trim() || null,
-          ukrainian: data['UA: украинский']?.trim() || null,
-          dutch: data['NL: голландский/нидерландский']?.trim() || null,
-          kyrgyz: data['KG: киргизский']?.trim() || null,
-          uzbek: data['UZ: узбекский']?.trim() || null,
-          armenian: data['Армянский']?.trim() || null
+  // Проверяем, пуста ли таблица, и только тогда импортируем данные из CSV
+  db.get("SELECT COUNT(*) as count FROM translations", (err, row) => {
+    if (err) {
+      console.error('Ошибка при проверке базы данных:', err);
+      return;
+    }
+    
+    if (row.count === 0) {
+      console.log('База данных пуста, импортирую данные из CSV...');
+      // Импорт данных из CSV
+      const results = [];
+      fs.createReadStream('translations.csv')
+        .pipe(csv({ separator: ';' }))
+        .on('data', (data) => {
+          // Пропускаем пустые строки и заголовки
+          if (data['НА ПЕРЕВОД'] && data['НА ПЕРЕВОД'].trim() !== '') {
+            results.push({
+              russian: data['НА ПЕРЕВОД'].trim(),
+              english: data['EN: английский']?.trim() || null,
+              german: data['DE: немецкий']?.trim() || null,
+              french: data['FR: французский']?.trim() || null,
+              spanish: data['ES: испанский']?.trim() || null,
+              polish: data['PL: польский']?.trim() || null,
+              kazakh: data['KZ: казахский (коррект)']?.trim() || null,
+              italian: data['IT: итальянский']?.trim() || null,
+              belarusian: data['BY: белорусский']?.trim() || null,
+              ukrainian: data['UA: украинский']?.trim() || null,
+              dutch: data['NL: голландский/нидерландский']?.trim() || null,
+              kyrgyz: data['KG: киргизский']?.trim() || null,
+              uzbek: data['UZ: узбекский']?.trim() || null,
+              armenian: data['Армянский']?.trim() || null
+            });
+          }
+        })
+        .on('end', () => {
+          const stmt = db.prepare(`INSERT INTO translations 
+            (russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+          
+          results.forEach(row => {
+            stmt.run([
+              row.russian, row.english, row.german, row.french, row.spanish, 
+              row.polish, row.kazakh, row.italian, row.belarusian, row.ukrainian,
+              row.dutch, row.kyrgyz, row.uzbek, row.armenian
+            ]);
+          });
+          
+          stmt.finalize();
+          console.log(`Импортировано ${results.length} записей из CSV в файл translations.db`);
         });
-      }
-    })
-    .on('end', () => {
-      const stmt = db.prepare(`INSERT INTO translations 
-        (russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-      
-      results.forEach(row => {
-        stmt.run([
-          row.russian, row.english, row.german, row.french, row.spanish, 
-          row.polish, row.kazakh, row.italian, row.belarusian, row.ukrainian,
-          row.dutch, row.kyrgyz, row.uzbek, row.armenian
-        ]);
-      });
-      
-      stmt.finalize();
-      console.log(`Импортировано ${results.length} записей из CSV`);
-    });
+    } else {
+      console.log(`В базе данных уже есть ${row.count} записей, импорт не требуется.`);
+    }
+  });
 });
 
-// API маршруты (остаются без изменений)
+// API маршруты
 app.get('/api/translations', (req, res) => {
   const searchTerm = req.query.search || '';
   
@@ -131,7 +154,7 @@ app.post('/api/translations', (req, res) => {
   );
 });
 
-app.put('/api/translations/:id', (req, res) => {
+app.put('/api/translations/:id', authenticate, (req, res) => {
   const id = req.params.id;
   const { russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian } = req.body;
   
@@ -148,7 +171,7 @@ app.put('/api/translations/:id', (req, res) => {
   );
 });
 
-app.delete('/api/translations/:id', (req, res) => {
+app.delete('/api/translations/:id', authenticate, (req, res) => {
   const id = req.params.id;
   
   db.run('DELETE FROM translations WHERE id = ?', [id], function(err) {
