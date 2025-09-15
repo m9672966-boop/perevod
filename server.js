@@ -15,18 +15,45 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('.'));
 
+// Список разрешенных почт
+const ALLOWED_EMAILS = [
+  'mantsurova_e@panna.ru',
+  'kulyabina_v@panna.ru', 
+  'semenchenko_d@panna.ru',
+  'pyatnitskaya_n@panna.ru',
+  'tolstokorova_m@panna.ru'
+];
+
+// Middleware для проверки email
+const checkEmailAuth = (req, res, next) => {
+  const userEmail = req.headers['x-user-email'];
+  
+  if (!userEmail) {
+    return res.status(401).json({ error: 'Email не указан' });
+  }
+  
+  if (!ALLOWED_EMAILS.includes(userEmail.toLowerCase())) {
+    return res.status(403).json({ error: 'Доступ запрещен' });
+  }
+  
+  next();
+};
+
+// Middleware для проверки пароля и email
+const authenticate = (req, res, next) => {
+  const password = req.headers['x-password'];
+  const userEmail = req.headers['x-user-email'];
+  
+  // Проверяем пароль И email
+  if (password === 'Proizv_23!' && userEmail && ALLOWED_EMAILS.includes(userEmail.toLowerCase())) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Неверные учетные данные' });
+  }
+};
+
 // Инициализация базы данных в ФАЙЛЕ
 const db = new sqlite3.Database('translations.db');
-
-// Middleware для проверки пароля на запросы изменения/удаления
-const authenticate = (req, res, next) => {
-    const password = req.headers['x-password'];
-    if (password === 'Proizv_23!') {
-        next(); // Пароль верный, продолжаем
-    } else {
-        res.status(401).json({ error: 'Неверный пароль' });
-    }
-};
 
 // Создание таблицы переводов (если не существует)
 db.serialize(() => {
@@ -154,6 +181,7 @@ app.post('/api/translations', (req, res) => {
     }
   );
 });
+
 app.get('/api/export-excel', (req, res) => {
   db.all('SELECT * FROM translations', [], async (err, rows) => {
     if (err) {
@@ -200,6 +228,7 @@ app.get('/api/export-excel', (req, res) => {
     }
   });
 });
+
 app.put('/api/translations/:id', authenticate, (req, res) => {
   const id = req.params.id;
   const { russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian } = req.body;
@@ -229,6 +258,11 @@ app.delete('/api/translations/:id', authenticate, (req, res) => {
   });
 });
 
+// Маршрут для проверки email
+app.post('/api/check-auth', checkEmailAuth, (req, res) => {
+  res.json({ success: true, message: 'Доступ разрешен' });
+});
+
 // Обслуживание HTML страниц
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -241,4 +275,3 @@ app.get('/translations', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
