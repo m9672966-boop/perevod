@@ -1,5 +1,6 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
+const ExcelJS = require('exceljs');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -153,7 +154,52 @@ app.post('/api/translations', (req, res) => {
     }
   );
 });
+app.get('/api/export-excel', (req, res) => {
+  db.all('SELECT * FROM translations', [], async (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
 
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Translations');
+      
+      // Заголовки
+      worksheet.columns = [
+        { header: 'ID', key: 'id', width: 10 },
+        { header: 'Russian', key: 'russian', width: 30 },
+        { header: 'English', key: 'english', width: 30 },
+        { header: 'German', key: 'german', width: 30 },
+        { header: 'French', key: 'french', width: 30 },
+        { header: 'Spanish', key: 'spanish', width: 30 },
+        { header: 'Polish', key: 'polish', width: 30 },
+        { header: 'Kazakh', key: 'kazakh', width: 30 },
+        { header: 'Italian', key: 'italian', width: 30 },
+        { header: 'Belarusian', key: 'belarusian', width: 30 },
+        { header: 'Ukrainian', key: 'ukrainian', width: 30 },
+        { header: 'Dutch', key: 'dutch', width: 30 },
+        { header: 'Kyrgyz', key: 'kyrgyz', width: 30 },
+        { header: 'Uzbek', key: 'uzbek', width: 30 },
+        { header: 'Armenian', key: 'armenian', width: 30 }
+      ];
+
+      // Данные
+      rows.forEach(row => {
+        worksheet.addRow(row);
+      });
+
+      // Настройка ответа
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=translations.xlsx');
+
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      res.status(500).json({ error: 'Error generating Excel file' });
+    }
+  });
+});
 app.put('/api/translations/:id', authenticate, (req, res) => {
   const id = req.params.id;
   const { russian, english, german, french, spanish, polish, kazakh, italian, belarusian, ukrainian, dutch, kyrgyz, uzbek, armenian } = req.body;
@@ -195,3 +241,4 @@ app.get('/translations', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
