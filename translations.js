@@ -1,5 +1,6 @@
 let currentSearchTimeout = null;
 let editingId = null;
+let currentUserEmail = '';
 let visibleLanguages = ['russian', 'english', 'german', 'french', 'spanish', 'polish', 'kazakh', 'italian', 'belarusian', 'ukrainian', 'dutch', 'kyrgyz', 'uzbek', 'armenian'];
 const allLanguages = [
   { id: 'russian', name: 'Русский' },
@@ -18,6 +19,15 @@ const allLanguages = [
   { id: 'armenian', name: 'Армянский' }
 ];
 
+// Список разрешенных почт
+const ALLOWED_EMAILS = [
+  'mantsurova_e@panna.ru',
+  'kulyabina_v@panna.ru', 
+  'semenchenko_d@panna.ru',
+  'pyatnitskaya_n@panna.ru',
+  'tolstokorova_m@panna.ru'
+];
+
 // Сохранение настроек в localStorage
 function saveSettings() {
   localStorage.setItem('visibleLanguages', JSON.stringify(visibleLanguages));
@@ -29,6 +39,58 @@ function loadSettings() {
   if (saved) {
     visibleLanguages = JSON.parse(saved);
   }
+}
+
+// Функция для запроса email
+function requestEmail() {
+  const email = prompt('Введите ваш email для доступа к редактированию:');
+  if (email) {
+    // Проверяем email на сервере
+    fetch('/api/check-auth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-email': email
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        currentUserEmail = email;
+        localStorage.setItem('userEmail', email);
+        updateUserDisplay();
+        alert('Доступ разрешен!');
+      } else {
+        alert('Доступ запрещен. Ваш email не в списке разрешенных.');
+        requestEmail(); // Запрашиваем снова
+      }
+    })
+    .catch(error => {
+      console.error('Ошибка проверки email:', error);
+      alert('Ошибка проверки доступа');
+    });
+  }
+}
+
+// Обновление отображения информации о пользователе
+function updateUserDisplay() {
+  const userInfo = document.getElementById('userInfo');
+  const currentUserSpan = document.getElementById('currentUser');
+  
+  if (currentUserEmail) {
+    userInfo.style.display = 'block';
+    currentUserSpan.textContent = currentUserEmail;
+  } else {
+    userInfo.style.display = 'none';
+  }
+}
+
+// Выход из системы
+function logout() {
+  currentUserEmail = '';
+  localStorage.removeItem('userEmail');
+  updateUserDisplay();
+  requestEmail();
 }
 
 // Инициализация фильтров языков
@@ -175,6 +237,11 @@ function applyLanguageFilter() {
 }
 
 function startEdit(id) {
+  if (!currentUserEmail) {
+    requestEmail();
+    return;
+  }
+  
   editingId = id;
   
   // Запрашиваем пароль
@@ -185,7 +252,11 @@ function startEdit(id) {
   }
   
   // Загружаем данные перевода для редактирования
-  fetch(`/api/translations/${id}`)
+  fetch(`/api/translations/${id}`, {
+    headers: {
+      'x-user-email': currentUserEmail
+    }
+  })
     .then(response => response.json())
     .then(translation => {
       // Заполняем форму данными
@@ -221,6 +292,11 @@ function startEdit(id) {
 }
 
 function saveEdit() {
+  if (!currentUserEmail) {
+    requestEmail();
+    return;
+  }
+  
   const password = prompt('Введите пароль для подтверждения:');
   if (password !== 'Proizv_23!') {
     alert('Неверный пароль!');
@@ -244,12 +320,14 @@ function saveEdit() {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      'x-password': password,
+      'x-user-email': currentUserEmail
     },
     body: JSON.stringify(translationData)
   })
   .then(response => response.json())
   .then(data => {
-    if (data.success) {
+    if (data.changes > 0) {
       alert('Перевод успешно обновлен!');
       cancelEdit();
       searchTranslations();
@@ -317,7 +395,7 @@ function addTranslation() {
   })
   .then(response => response.json())
   .then(data => {
-    if (data.success) {
+    if (data.id) {
       alert('Перевод успешно добавлен!');
       // Очищаем форму
       document.getElementById('russianInput').value = '';
@@ -342,6 +420,11 @@ function addTranslation() {
 }
 
 function deleteTranslation(id) {
+  if (!currentUserEmail) {
+    requestEmail();
+    return;
+  }
+  
   const password = prompt('Введите пароль для удаления:');
   if (password !== 'Proizv_23!') {
     alert('Неверный пароль!');
@@ -353,11 +436,15 @@ function deleteTranslation(id) {
   }
   
   fetch(`/api/translations/${id}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: {
+      'x-password': password,
+      'x-user-email': currentUserEmail
+    }
   })
   .then(response => response.json())
   .then(data => {
-    if (data.success) {
+    if (data.changes > 0) {
       alert('Перевод успешно удален!');
       searchTranslations();
     } else {
@@ -378,6 +465,15 @@ function escapeHtml(text) {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
+  // Проверяем сохраненный email
+  const savedEmail = localStorage.getItem('userEmail');
+  if (savedEmail && ALLOWED_EMAILS.includes(savedEmail.toLowerCase())) {
+    currentUserEmail = savedEmail;
+    updateUserDisplay();
+  } else {
+    requestEmail();
+  }
+  
   loadSettings();
   initLanguageFilters();
   initAddForm();
