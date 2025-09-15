@@ -43,6 +43,30 @@
       gap: 10px;
     }
 
+    .user-info {
+      background: #e8f5e8;
+      padding: 10px 15px;
+      border-radius: 4px;
+      border: 1px solid #4caf50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info button {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .user-info button:hover {
+      background: #d32f2f;
+    }
+
     .search-box {
       flex: 1;
       min-width: 300px;
@@ -253,6 +277,11 @@
     <div class="controls">
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Поиск переводов..." oninput="searchTranslations()">
+      </div>
+      
+      <div class="user-info" id="userInfo" style="display: none;">
+        Пользователь: <span id="currentUser"></span>
+        <button onclick="logout()">Выйти</button>
       </div>
       
       <a href="/api/export-excel" class="export-btn" download>
